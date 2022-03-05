@@ -5,18 +5,18 @@ import 'package:intl/intl.dart';
 
 //////////////////// Common Functions ////////////////////
 
-String subnetIP = "localhost:8080";
+String subnetIP = "localhost:5000";
 
 void createDialog(BuildContext context, String text) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
-        title: Text("Incorrect data"),
+        title: Text("Error"),
         content: Text(text),
         actions: <Widget>[
           ElevatedButton(
-            child: Text("Accept"),
+            child: Text("Ok"),
             onPressed: () {
               Navigator.of(context).pop();
             },
