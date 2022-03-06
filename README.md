@@ -6,7 +6,7 @@
  ## Functionality
  This fridge app allows you to see a list of available fridges and their contents, add new fridges and items and update or delete the already existing ones.
  
- #TODO
+# TODO
  * Adding fridges
  * Updating fridges
  * Adding items
