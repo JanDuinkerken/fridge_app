@@ -1,7 +1,22 @@
-import 'package:flutter/material.dart';
+//import 'dart:html';
+//import 'dart:io';
+import 'dart:async';
+//import 'dart:html';
+//import 'dart:convert';
+//import 'dart:developer';
+//import 'dart:math' as math;
 
-import 'dart:convert' as convert;	
-import 'package:http/http.dart' as http;
+import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/painting.dart';
+
+//import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
+import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+
+import 'fridge.dart';
+import 'item.dart';
+
 //import 'functions.dart';
 void main() {
   runApp(const MyApp());
@@ -15,10 +30,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Fridge list',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const MyHomePage(),
+      theme: ThemeData.light(),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const MyHomePage(),
+        '/items': (context) => const ItemList()
+      },
     );
   }
 }
@@ -31,93 +48,180 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  List<String> _fridges = [];
+  static const _pageSize = 10;
+  static const _biggerFont = TextStyle(fontSize: 18.0);
 
-  Future<void> requestFridges() async {
-    List<String> list = [];
-    try {
-      var url = Uri.parse('http://192.168.0.12:5000/fridges');
-      var r = await http.get(url);
-      var data = convert.jsonDecode(r.body);
-      for (var fridge in data) {
-      list.add(fridge["location"]);
-    }
-    _fridges = list;
-    //print(_fridges);
-    } catch (_) {
-      //print("FUCK");
-      return;
-    }
-  }
+  final PagingController<int, Fridge> _pagingController =
+      PagingController(firstPageKey: 0);
 
   @override
   void initState() {
+    _pagingController.addPageRequestListener((pageKey) {
+      _fetchPage(pageKey);
+    });
     super.initState();
-    //TODO : Why does it take so damn long to get the data from the request?
-    requestFridges();
+  }
+
+  Future<void> _fetchPage(int pageKey) async {
+    try {
+      final newItems = await requestFridges();
+      final isLastPage = newItems.length < _pageSize;
+      if (isLastPage) {
+        _pagingController.appendLastPage(newItems);
+      } else {
+        final nextPageKey = pageKey + newItems.length;
+        _pagingController.appendPage(newItems, nextPageKey);
+      }
+    } catch (error) {
+      _pagingController.error = error;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(title: const Text('Fridges')),
-    body:
-      ListView.separated(
+    return Scaffold(
+        appBar: AppBar(title: const Text('Fridges')), body: _buildList());
+  }
+
+  Widget _buildList() => PagedListView<int, Fridge>.separated(
+        pagingController: _pagingController,
+        builderDelegate: PagedChildBuilderDelegate<Fridge>(
+          animateTransitions: true,
+          transitionDuration: const Duration(milliseconds: 100),
+          itemBuilder: (context, item, index) => ListTile(
+            title: TextButton(
+              onPressed: () => Navigator.pushNamed(context, '/items',
+                  arguments: {
+                    "fridgeId": item.fridgeId,
+                    "location": item.location
+                  }),
+              child: Text(item.location, style: _biggerFont),
+            ),
+          ),
+        ),
         separatorBuilder: (context, index) => const Divider(
           color: Colors.black,
           height: 0,
         ),
-        padding: const EdgeInsets.only(left: 5, right: 5),
-        shrinkWrap: true,
-        itemCount: _fridges.length,
-        itemBuilder: (BuildContext context, int index) {
-        return Container(
-          height: 50,
-          color: Colors.lightBlueAccent[100],
-          child: Center(child: Text(_fridges[index])),
-          );
-        }
-      )
-    );
+      );
+
+  @override
+  void dispose() {
+    _pagingController.dispose();
+    super.dispose();
   }
 }
 
-class FridgeListPage extends StatefulWidget{
-
-  final List<String> fridges;
-  const FridgeListPage({Key? key, required this.fridges}) : super(key:key);
+class ItemList extends StatefulWidget {
+  const ItemList({Key? key}) : super(key: key);
 
   @override
-  State<FridgeListPage> createState() => _FridgeListPageState();
+  _ItemListState createState() => _ItemListState();
 }
 
-class _FridgeListPageState extends State<FridgeListPage> {
-  //Variables
-  final location = TextEditingController();
+class _ItemListState extends State<ItemList> {
+  static const _pageSize = 10;
+  static const _biggerFont = TextStyle(fontSize: 18.0);
+
+  final PagingController<int, Item> _pagingController =
+      PagingController(firstPageKey: 0);
+
+  late Map arguments;
+  late int fridgeId;
+  late String location;
+
+  //List<Item>? _itemList;
 
   @override
-  void initState(){
+  void initState() {
+    _pagingController.addPageRequestListener((pageKey) {
+      _fetchPage(pageKey);
+    });
     super.initState();
   }
 
-  //View
+//  void _refreshList() async {
+//    _itemList = await requestItem(fridgeId);
+//    _pagingController.refresh();
+//  }
+
+  Future<void> _fetchPage(int pageKey) async {
+    try {
+      final newItems = await requestItem(fridgeId);
+      final isLastPage = newItems.length < _pageSize;
+      if (isLastPage) {
+        _pagingController.appendLastPage(newItems);
+      } else {
+        final nextPageKey = pageKey + newItems.length;
+        _pagingController.appendPage(newItems, nextPageKey);
+      }
+    } catch (error) {
+      _pagingController.error = error;
+    }
+  }
+
+  //Future<void> _fetchPage(int pageKey) async {
+  //  try{
+  //    if (_itemList == null) _refreshList();
+//
+  //    int size = _itemList!.length;
+  //    final isLastPage = size <= pageKey + _pageSize;
+//
+  //    List<Item> newItems = List.from(_itemList!.getRange(pageKey, isLastPage ? size : pageKey + _pageSize));
+  //    if (isLastPage) {
+  //      _pagingController.appendLastPage(newItems);
+  //    }
+  //    else{
+  //      final nextPageKey = pageKey + newItems.length;
+  //      _pagingController.appendPage(newItems, nextPageKey);
+  //    }
+  //  }
+  //  catch(error){
+  //    _pagingController.error = error;
+  //  }
+  //}
+
+//  @override
+//  Widget build(BuildContext context){
+//    arguments = ModalRoute.of(context)!.settings.arguments as Map;
+//    fridgeId = arguments['fridgeId'];
+//    location = arguments['location'];
+//  }
+
   @override
   Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(title: const Text('Empty List Test')),
-    body:
-      ListView.builder(
-        padding: const EdgeInsets.all(8),
-        itemCount: widget.fridges.length,
-        itemBuilder: (BuildContext context, int index) {
-        return Container(
-          height: 50,
-          color: Colors.lightBlue[200],
-          child: Center(child: Text(widget.fridges[index])),
-          );
-        }
-      )
-    );
+    arguments = ModalRoute.of(context)!.settings.arguments as Map;
+    fridgeId = arguments['fridgeId'];
+    location = arguments['location'];
+    return Scaffold(
+        appBar: AppBar(title: const Text('Items')), body: _buildList());
+  }
+
+  Widget _buildList() => PagedListView<int, Item>.separated(
+        pagingController: _pagingController,
+        builderDelegate: PagedChildBuilderDelegate<Item>(
+          animateTransitions: true,
+          transitionDuration: const Duration(milliseconds: 100),
+          itemBuilder: (context, item, index) => ListTile(
+            title: TextButton(
+              onPressed: () => Navigator.pushNamed(context, '/items_info',
+                  arguments: {
+                    "fridgeId": item.fridgeId,
+                    "itemId": item.itemId
+                  }),
+              child: Text(item.i_name, style: _biggerFont),
+            ),
+          ),
+        ),
+        separatorBuilder: (context, index) => const Divider(
+          color: Colors.black,
+          height: 0,
+        ),
+      );
+
+  @override
+  void dispose() {
+    _pagingController.dispose();
+    super.dispose();
   }
 }
-
