@@ -8,6 +8,9 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+const String ip = "10.20.33.65:5000";
+//const String ip = "192.168.0.12:5000";
+
 class Fridge {
   Fridge({required this.location, required this.fridgeId});
 
@@ -20,7 +23,7 @@ class Fridge {
 }
 
 Future<List<Fridge>> requestFridges() async {
-  var url = Uri.parse('http://192.168.0.12:5000/fridges');
+  var url = Uri.parse('http://$ip/fridges');
   var r = await http.get(url);
   List<Fridge> list = [];
   if (r.statusCode == 200) {
@@ -35,28 +38,22 @@ Future<List<Fridge>> requestFridges() async {
   return list;
 }
 
-void createFridge(String location) async{
-  var url = Uri.parse('http://192.168.0.12:5000/fridges');
+void createFridge(String location) async {
+  var url = Uri.parse('http://$ip/fridges');
   final r = await http.post(
     url,
-    body: jsonEncode(<String, dynamic>{
-      "location": location
-    }),
+    body: jsonEncode(<String, dynamic>{"location": location}),
   );
 
   if (r.statusCode != 200) {
-    throw("Error creating new fridge: ${r.reasonPhrase}");
+    throw ("Error creating new fridge: ${r.reasonPhrase}");
   }
 }
 
-void updateFridge(String location, int fridgeId) async{
-  var url = Uri.parse('http://192.168.0.12:5000/fridges/${fridgeId.toString()}');
-  final r = await http.put(
-    url,
-    body: jsonEncode(<String, dynamic>{
-      "location": location
-    })
-  );
+void updateFridge(String location, int fridgeId) async {
+  var url = Uri.parse('http://$ip/fridges/${fridgeId.toString()}');
+  final r = await http.put(url,
+      body: jsonEncode(<String, dynamic>{"location": location}));
 
   if (r.statusCode != 200) {
     throw ("Error updating fridge: ${r.reasonPhrase}");
