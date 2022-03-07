@@ -49,7 +49,8 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   static const _pageSize = 10;
-  static const _biggerFont = TextStyle(fontSize: 18.0);
+  static const _biggerFont =
+      TextStyle(fontSize: 18.0, color: Color(0xFF0D47A1));
 
   final PagingController<int, Fridge> _pagingController =
       PagingController(firstPageKey: 0);
@@ -97,11 +98,12 @@ class _MyHomePageState extends State<MyHomePage> {
                   }),
               child: Text(item.location, style: _biggerFont),
             ),
+            tileColor: Colors.lightBlue[100],
           ),
         ),
         separatorBuilder: (context, index) => const Divider(
-          color: Colors.black,
-          height: 0,
+          color: Colors.white,
+          height: 5,
         ),
       );
 
@@ -121,7 +123,8 @@ class ItemList extends StatefulWidget {
 
 class _ItemListState extends State<ItemList> {
   static const _pageSize = 10;
-  static const _biggerFont = TextStyle(fontSize: 18.0);
+  static const _biggerFont =
+      TextStyle(fontSize: 18.0, color: Color(0xFF0D47A1));
 
   final PagingController<int, Item> _pagingController =
       PagingController(firstPageKey: 0);
@@ -211,11 +214,12 @@ class _ItemListState extends State<ItemList> {
                   }),
               child: Text(item.i_name, style: _biggerFont),
             ),
+            tileColor: Colors.lightBlue[100],
           ),
         ),
         separatorBuilder: (context, index) => const Divider(
-          color: Colors.black,
-          height: 0,
+          color: Colors.white,
+          height: 5,
         ),
       );
 
