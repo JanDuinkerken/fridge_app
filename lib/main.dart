@@ -163,34 +163,6 @@ class _ItemListState extends State<ItemList> {
     }
   }
 
-  //Future<void> _fetchPage(int pageKey) async {
-  //  try{
-  //    if (_itemList == null) _refreshList();
-//
-  //    int size = _itemList!.length;
-  //    final isLastPage = size <= pageKey + _pageSize;
-//
-  //    List<Item> newItems = List.from(_itemList!.getRange(pageKey, isLastPage ? size : pageKey + _pageSize));
-  //    if (isLastPage) {
-  //      _pagingController.appendLastPage(newItems);
-  //    }
-  //    else{
-  //      final nextPageKey = pageKey + newItems.length;
-  //      _pagingController.appendPage(newItems, nextPageKey);
-  //    }
-  //  }
-  //  catch(error){
-  //    _pagingController.error = error;
-  //  }
-  //}
-
-//  @override
-//  Widget build(BuildContext context){
-//    arguments = ModalRoute.of(context)!.settings.arguments as Map;
-//    fridgeId = arguments['fridgeId'];
-//    location = arguments['location'];
-//  }
-
   @override
   Widget build(BuildContext context) {
     arguments = ModalRoute.of(context)!.settings.arguments as Map;

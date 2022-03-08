@@ -8,8 +8,8 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
-const String ip = "10.20.33.65:5000";
-//const String ip = "192.168.0.12:5000";
+//const String ip = "10.20.33.65:5000";
+const String ip = "192.168.0.12:5000";
 
 class Fridge {
   Fridge({required this.location, required this.fridgeId});
